@@ -1,0 +1,94 @@
+S          := $(CURDIR)
+SOURCEROOT := $(S)/sourceroot
+
+SHELL      ?= /bin/sh
+
+DESTDIR     =
+PREFIX      = /
+EXEC_PREFIX = $(PREFIX)
+BINDIR      = $(EXEC_PREFIX:/=)/bin
+SBINDIR     = $(EXEC_PREFIX:/=)/sbin
+#LIBDIR_NAME = lib
+#LIBDIR      = $(EXEC_PREFIX:/=)/$(LIBDIR_NAME)
+
+X_NO_INSTALL_PROFILE ?= 0
+
+LN      ?= ln
+INSTALL ?= install
+
+INSMODE ?= 0644
+EXEMODE ?= 0755
+DIRMODE ?= 0755
+
+DOINS = $(INSTALL) -D -m $(INSMODE) --
+DOEXE = $(INSTALL) -D -m $(EXEMODE) --
+DODIR = $(INSTALL) -d -m $(DIRMODE) --
+#DOSYM = $(LN) -f -s --
+
+PHONY =
+
+PHONY += install
+install: $(addprefix install-,init files scripts hooks)
+
+
+PHONY += install-init
+install-init:
+	## /
+	$(DOINS) $(SOURCEROOT)/functions.sh $(DESTDIR)/functions.sh
+	$(DOEXE) $(SOURCEROOT)/init $(DESTDIR)/init
+
+	if [ -n '$(VERSION)' ]; then \
+		rm -f -- '$(DESTDIR)/VERSION'; \
+		printf '%s\n' '$(VERSION)' > '$(DESTDIR)/VERSION' || exit; \
+	elif [ -e '$(SOURCEROOT)/VERSION' ]; then \
+		$(DOINS) $(SOURCEROOT)/VERSION $(DESTDIR)/VERSION || exit; \
+	else \
+		rm -f -- '$(DESTDIR)/VERSION'; \
+		[ -e '$(S)/.git' ] && \
+		git -C '$(S)' describe --tags --dirty > '$(DESTDIR)/VERSION' || \
+		printf '%s\n' undef > '$(DESTDIR)/VERSION' || exit; \
+	fi
+
+
+PHONY += install-scripts
+install-scripts:
+	## $(BINDIR)
+	$(DOEXE) $(SOURCEROOT)/bin/resume-boot $(DESTDIR)$(BINDIR:/=)/resume-boot
+	$(DOEXE) $(SOURCEROOT)/bin/unlock-luks $(DESTDIR)$(BINDIR:/=)/unlock-luks
+
+
+PHONY += install-files
+install-files:
+	## /etc
+	$(DOINS) $(SOURCEROOT)/etc/lvm/lvm.conf $(DESTDIR)/etc/lvm/lvm.conf
+
+ifneq ($(X_NO_INSTALL_PROFILE),1)
+	$(DOINS) $(SOURCEROOT)/etc/profile $(DESTDIR)/etc/profile
+	$(DOINS) $(SOURCEROOT)/etc/profile.d/00_profile.sh \
+		$(DESTDIR)/etc/profile.d/00_profile.sh
+endif
+
+	$(DOINS) $(SOURCEROOT)/etc/suspend.conf $(DESTDIR)/etc/suspend.conf
+
+# install keymap file, if any
+	[ ! -e '$(SOURCEROOT)/keymap' ] || \
+		$(DOINS) $(SOURCEROOT)/keymap $(DESTDIR)/keymap
+
+
+PHONY += install-hooks
+install-hooks:
+	## /hooks
+	[ ! -d '$(SOURCEROOT:/=)/hooks' ] || { \
+		cd '$(SOURCEROOT:/=)/hooks/' && \
+		find  './' -type f -print0 | \
+			xargs -r -0 -n 1 -I '{FILE}' $(SHELL) -c \
+				'\
+					set -- $(DOEXE) "{FILE}" "$(DESTDIR:/=)/hooks/{FILE}" && \
+					printf "%s\n" "$${*}" && \
+					"$${@}"'; \
+	}
+
+
+#FORCE:
+
+.PHONY: $(PHONY)
