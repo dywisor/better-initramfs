@@ -418,7 +418,9 @@ setup_sshd() {
 	# Prepare root account.
 	run echo 'root:x:0:0:root:/root:/bin/sh' > /etc/passwd
 
-	if [ -f /authorized_keys ]; then
+	if [ -f /root/.ssh/authorized_keys ]; then
+		einfo "Skipping import of authorized_keys, file is already present."
+	elif [ -f /authorized_keys ]; then
 		run cp /authorized_keys /root/.ssh/authorized_keys
 	else
 		eerror "Missing /authorized_keys file, you will be no able login via sshd."
