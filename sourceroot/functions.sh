@@ -511,7 +511,9 @@ emount() {
 			;;
 
 			'/newroot/usr')
-				if [ -f '/newroot/etc/fstab' ]; then
+				if mountpoint -q '/newroot/usr'; then
+					einfo "/newroot/usr already mounted, skipping..."
+				elif [ -f '/newroot/etc/fstab' ]; then
 						while read device mountpoint fstype fsflags _; do
 						if [ "${mountpoint}" = '/usr' ]; then
 							if [ -d '/newroot/usr' ]; then
