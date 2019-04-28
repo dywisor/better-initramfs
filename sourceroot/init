@@ -93,6 +93,7 @@ run_hooks pre_newroot_mount
 emount /newroot
 run_hooks post_newroot_mount
 emount /newroot/usr
+run_hooks newroot_late
 # Wait for sshd connection only if rescueshell have never occur.
 use sshd && was_shell || wait_sshd
 cleanup
