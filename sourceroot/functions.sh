@@ -370,7 +370,7 @@ SetupNetwork() {
 			einfo "Bringing up ${binit_net_physif} interface ..."
 			run ip link set up dev "${binit_net_physif}"
 			einfo "Adding VLAN ${binit_net_vlan} on ${binit_net_physif} interface ..."
-			run vconfig add "${binit_net_physif}" "${binit_net_vlan}"
+			run ip link add link "${binit_net_physif}" name "${binit_net_if}" type vlan id "${binit_net_vlan}"
 		;;
 	esac
 
