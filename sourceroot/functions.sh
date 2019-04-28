@@ -412,8 +412,6 @@ setup_sshd() {
 	einfo "Generating dropbear ssh host keys ..."
 	test -f /etc/dropbear/dropbear_rsa_host_key || \
 		run dropbearkey -t rsa -f /etc/dropbear/dropbear_rsa_host_key > /dev/null
-	test -f /etc/dropbear/dropbear_dss_host_key || \
-		run dropbearkey -t dss -f /etc/dropbear/dropbear_dss_host_key > /dev/null
 
 	# Prepare root account.
 	run echo 'root:x:0:0:root:/root:/bin/sh' > /etc/passwd
