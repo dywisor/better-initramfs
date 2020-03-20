@@ -140,7 +140,7 @@ resolve_device() {
 }
 
 process_commandline_options() {
-	for i in $(cat /proc/cmdline); do
+	for i in $(cat -- "${1}"); do
 		case "${i}" in
 			initramfsdebug)
 				set -x

@@ -68,7 +68,7 @@ emount /proc /sys
 # Disable kernel messages from popping onto the screen
 echo 0 > /proc/sys/kernel/printk
 
-process_commandline_options
+process_commandline_options /proc/cmdline
 InitializeBusybox
 emount /dev
 run_hooks early
